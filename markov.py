@@ -2,6 +2,8 @@ from random import choice
 
 import sys
 
+import string
+
 while True:
     try:
         print 'How long would you like your n-grams to be?'
@@ -102,14 +104,17 @@ def make_chains_n_gram(text_string, n):
 def make_text(chains, n):
     """Takes dictionary of markov chains; returns random text."""
 
-    key = choice(chains.keys())
+    while True:
+        key = choice(chains.keys())
+        if key[0][0].isupper():
+            break
 
     text = key[0]
 
     for i in range(1,len(key)):
         text = text + ' ' + key[i]
 
-    while key in chains and len(text) <= 200:
+    while key in chains:# and len(text) <= 200:
         random_word = choice(chains[key])
         text = text + ' ' + random_word
 
