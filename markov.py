@@ -1,5 +1,6 @@
 from random import choice
 
+import sys
 
 def open_and_read_file(file_path):
     """Takes file path as string; returns text as string.
@@ -38,23 +39,21 @@ def make_chains(text_string):
         else:
             chains[key] = [words[i+2]]
 
-    i == len(words) - 1
 
-    key = (words[-1], words[0])
+    last_key = (words[-1], words[0])
 
-    if key in chains:
-        chains[key].append(words[1])
+    if last_key in chains:
+        chains[last_key].append(words[1])
     else:
-        chains[key] = [words[1]]
+        chains[last_key] = [words[1]]
 
-    i == len(words) - 2
 
-    key = (words[i], words[-1])
+    second_to_last_key = (words[-2], words[-1])
 
-    if key in chains:
-        chains[key].append(words[0])
+    if second_to_last_key in chains:
+        chains[second_to_last_key].append(words[0])
     else:
-        chains[key] = [words[0]]
+        chains[second_to_last_key] = [words[0]]
 
 
     return chains
@@ -63,14 +62,23 @@ def make_chains(text_string):
 def make_text(chains):
     """Takes dictionary of markov chains; returns random text."""
 
-    text = ""
+    key = choice(chains.keys())
 
-    # your code goes here
+    text = key[0] + ' ' + key[1]
+
+    while key in chains: # or len(text) >= 200:
+        random_word = choice(chains[key])
+        text = text + ' ' + random_word
+
+        if len(text) >= 200:
+            break
+
+        key = tuple([key[1], random_word])
 
     return text
 
 
-input_path = "green-eggs.txt"
+input_path = sys.argv[1]
 
 # Open the file and turn it into one long string
 input_text = open_and_read_file(input_path)
@@ -83,4 +91,3 @@ random_text = make_text(chains)
 
 print random_text
 
-print chains
