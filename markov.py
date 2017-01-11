@@ -114,9 +114,20 @@ def make_text(chains, n):
     for i in range(1,len(key)):
         text = text + ' ' + key[i]
 
-    while key in chains:# and len(text) <= 200:
+    while key in chains and len(text) <= 200:
+
         random_word = choice(chains[key])
-        text = text + ' ' + random_word
+
+        random_word_for_text = None 
+
+        if key[n-1][-1] in "!?." and random_word[0].islower():
+            continue
+        elif key[n-1][-1] not in "!?." and random_word[0].isupper() and random_word[0] != 'I':
+            random_word_for_text = random_word.lower()
+        else:
+            random_word_for_text = random_word
+
+        text = text + ' ' + random_word_for_text
 
         key_list = list(key)[1:]
         key_list.append(random_word)
