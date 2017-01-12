@@ -4,15 +4,29 @@ import sys
 
 import string
 
-while True:
-    try:
-        print 'How long would you like your n-grams to be?'
-        n = int(raw_input('> '))
-        break
-    except ValueError:
-        print "Please input a valid integer."
-        continue
+import twitter
 
+import os
+
+api = twitter.Api(
+    consumer_key=os.environ['TWITTER_CONSUMER_KEY'],
+    consumer_secret=os.environ['TWITTER_CONSUMER_SECRET'],
+    access_token_key=os.environ['TWITTER_ACCESS_TOKEN_KEY'],
+    access_token_secret=os.environ['TWITTER_ACCESS_TOKEN_SECRET'],
+    )
+
+# while True:
+#     try:
+#         print 'How long would you like your n-grams to be?'
+#         n = int(raw_input('> '))
+#         break
+#     except ValueError:
+#         print "Please input a valid integer."
+#         continue
+
+statuses = api.GetUserTimeline(screen_name='Generic_Popstar')
+
+print statuses[-1]
 
 def open_and_read_file(file_path):
     """Takes file path as string; returns text as string.
@@ -44,13 +58,12 @@ def make_chains_bi_gram(text_string):
     words = text_string.split()
 
     for i in range(len(words) - 2):
-        key = (words[i],words[i+1])
+        key = (words[i], words[i+1])
 
         if key in chains:
             chains[key].append(words[i+2])
         else:
             chains[key] = [words[i+2]]
-
 
     last_key = (words[-1], words[0])
 
@@ -59,15 +72,12 @@ def make_chains_bi_gram(text_string):
     else:
         chains[last_key] = [words[1]]
 
-
     second_to_last_key = (words[-2], words[-1])
 
     if second_to_last_key in chains:
         chains[second_to_last_key].append(words[0])
     else:
         chains[second_to_last_key] = [words[0]]
-
-    print chains
 
     return chains
 
@@ -100,8 +110,7 @@ def make_chains_n_gram(text_string, n):
     return chains
 
 
-
-def make_text(chains, n):
+def make_text(chains, n=2):
     """Takes dictionary of markov chains; returns random text."""
 
     while True:
@@ -111,10 +120,10 @@ def make_text(chains, n):
 
     text = key[0]
 
-    for i in range(1,len(key)):
+    for i in range(1, len(key)):
         text = text + ' ' + key[i]
 
-    while key in chains and len(text) <= 140:
+    while key in chains:
 
         random_word = choice(chains[key])
 
@@ -127,13 +136,19 @@ def make_text(chains, n):
         else:
             random_word_for_text = random_word
 
-        text = text + ' ' + random_word_for_text
+        if len(text + random_word_for_text) <= 115:
+            text = text + ' ' + random_word_for_text
+        else:
+            break
 
         key_list = list(key)[1:]
         key_list.append(random_word)
         key = tuple(key_list)
 
-    return text
+    if text in input_text:
+        make_text(chains, n)
+    else:
+        return text + " #hackbrightgracejan17"
 
 
 input_path = sys.argv[1]
@@ -142,10 +157,15 @@ input_path = sys.argv[1]
 input_text = open_and_read_file(input_path)
 
 # Get a Markov chain
-chains = make_chains_n_gram(input_text, n)
+# chains = make_chains_n_gram(input_text, n)
+chains = make_chains_bi_gram(input_text)
 
 # Produce random text
-random_text = make_text(chains, n)
+# random_text = make_text(chains, n)
+random_text = make_text(chains)
 
-print random_text
+status = api.PostUpdate(random_text)
 
+print status.text
+
+# print random_text
